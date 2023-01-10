@@ -1,0 +1,3 @@
+#!/bin/bash
+
+uvicorn naturalness_score.api:app

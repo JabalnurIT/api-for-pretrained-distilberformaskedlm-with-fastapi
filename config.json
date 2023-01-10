@@ -1,0 +1,6 @@
+{
+    "DISTIL_BERT_MODEL": "distilbert-base-uncased",
+    "PRE_TRAINED_MODEL": "assets/pytorch_model.bin",
+    "PRE_TRAINED_CONFIG": "assets/config.json",
+    "MAX_SEQUENCE_LEN": 160
+}
