@@ -30,7 +30,11 @@ After finish the installation, run the shell pipenv (In case you don't have pipe
 pipenv shell
 ```
 
-That bash terminal should change to pipenv terminal.
+That bash terminal should change to pipenv terminal. After that run this code in that terminal.
+
+```bash
+bin/start_server
+```
 
 4. Open a new bash terminal and run this into the terminal, each code for one function
 
