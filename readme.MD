@@ -6,19 +6,7 @@
 git clone https://github.com/JabalnurIT/api-for-pretrained-distilbertmodelformaskedlm-with-fastapi.git
 ```
 
-2. Download the pretrained model from this link:
-
-```bash
-https://drive.google.com/file/d/1A-OA3xZD8a0zqxggz-1JYl_16knm_f57/view?usp=share_link
-```
-
-After that, put the file inside the project assets.
-
-```bash
-./assets/
-```
-
-3. Open a new bash terminal (it is recommended to use bash) and install the dependency
+2. Open a new bash terminal (it is recommended to use bash) and install the dependency
 
 ```bash
 pipenv install --dev
@@ -30,13 +18,27 @@ After finish the installation, run the shell pipenv (In case you don't have pipe
 pipenv shell
 ```
 
-That bash terminal should change to pipenv terminal. After that run this code in that terminal.
+That bash terminal should change to pipenv terminal. After that run this code on that terminal.
 
 ```bash
+chmod +x bin/start_server
 bin/start_server
 ```
 
-4. Open a new bash terminal and run this into the terminal, each code for one function
+3. Download the pretrained model from this link:
+
+```bash
+chmod +x bin/download_model
+bin/download_model
+```
+
+After that, put the file inside the project assets.
+
+```bash
+./assets/
+```
+
+4. Open a new bash terminal and run this into the terminal, each code for one function, make sure you have install httpie on your computer
 
 ```bash
 http POST http://127.0.0.1:8000/fill_mask text="1,Q42,[MASK] Adams,[MASK] writer and [MASK],Male,United Kingdom,Artist,1952,2001.0,natural causes,49.0"

@@ -2,6 +2,9 @@
 import gdown
 
 gdown.download(
-    "https://drive.google.com/uc?id=1V8itWtowCYnb2Bc9KlK9SxGff9WwmogA",
-    "assets/model_state_dict.bin",
+    "https://drive.google.com/uc?id=1A-OA3xZD8a0zqxggz-1JYl_16knm_f57",
+    # "https://drive.google.com/uc?id=1V8itWtowCYnb2Bc9KlK9SxGff9WwmogA",
+    # "https://drive.google.com/file/d//view?usp=share_link",
+    # "https://drive.google.com/file/d/1A-OA3xZD8a0zqxggz-1JYl_16knm_f57/view?usp=sharing",
+    "assets/pytorch_model.bin",
 )

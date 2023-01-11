@@ -53,9 +53,9 @@ class Model:
             for n,token in enumerate(mask):
                 if n == 0: 
                     lastTop = self.tokenizer.decode([token])
-                print(f"mask{i}>>> {text.replace(self.tokenizer.mask_token, self.tokenizer.decode([token]), 1)}")
+                # print(f"mask{i}>>> {text.replace(self.tokenizer.mask_token, self.tokenizer.decode([token]), 1)}")
             text = text.replace(self.tokenizer.mask_token, lastTop, 1)
-        print(text)
+        # print(text)
         return (
             text
         )

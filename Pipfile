@@ -19,7 +19,7 @@ pandas = "*"
 datasets = "*"
 
 [requires]
-python_version = "3.10.0"
+python_version = "3.10.9"
 
 [pipenv]
 allow_prereleases = true
