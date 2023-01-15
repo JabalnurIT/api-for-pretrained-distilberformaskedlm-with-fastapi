@@ -11,6 +11,9 @@ app = FastAPI()
 class NaturalnessRequest(BaseModel):
     text: str
 
+    class Config:
+        orm_mode = True
+
 
 class NaturalnessMaskResponse(BaseModel):
     text_mask_fill: str

@@ -76,7 +76,7 @@ class Model:
                 vnan += 1
             if not math.isnan(loss):
                 p += math.exp(loss)
-        perplexity = p / n
+        perplexity = p / (n-vnan)
         return (
             perplexity
         )
