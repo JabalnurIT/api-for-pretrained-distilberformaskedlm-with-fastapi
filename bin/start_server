@@ -1,5 +1,3 @@
 #!/bin/bash
-# for windows
-# uvicorn naturalness_score.api:app
-# for mac os
+
 uvicorn naturalness_score.api:app
