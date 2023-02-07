@@ -18,7 +18,7 @@ print('Execution time :', et1-st1, 'seconds')
 print('Avarage Perplexity')
 print('Execution time:', et2-st2, 'seconds')
 
-print(9831050005000007%6)
+# print(9831050005000007%6)
 
 # Run In pipenv terminal 
 # python naturalness_score/testing_local.py
