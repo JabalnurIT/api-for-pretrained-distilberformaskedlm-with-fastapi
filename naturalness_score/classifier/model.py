@@ -5,7 +5,8 @@ import math
 import numpy as np
 import pandas as pd
 from datasets import Dataset
-from transformers import AutoTokenizer, Trainer, DataCollatorForLanguageModeling
+from transformers import AutoTokenizer, Trainer, DataCollatorForLanguageModeling, TrainingArguments
+from transformers import DefaultFlowCallback
 
 from .naturalness_classifier import NaturalnessClassifier
 
@@ -19,12 +20,12 @@ class Model:
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(config["DISTIL_BERT_MODEL"])
 
-        model = NaturalnessClassifier()
+        self.model = NaturalnessClassifier()
 
-        data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm_probability=0.15)
+        self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm_probability=0.15)
         self.trainer = Trainer(
-            model=model.to(self.device),
-            data_collator=data_collator,
+            model=self.model.to(self.device),
+            data_collator=self.data_collator,
         )
 
     def fill_mask(self, text):
@@ -41,7 +42,7 @@ class Model:
         input_ids = inputs["input_ids"].to(self.device)
 
         with torch.no_grad():
-            token_logits = self.trainer.model(input_ids, None, None)
+            token_logits = self.trainer.model(input_ids, None, None).logits
 
         _,mask_token_index = (np.argwhere(inputs["input_ids"] == self.tokenizer.mask_token_id)).numpy()
 
@@ -81,6 +82,48 @@ class Model:
             perplexity
         )
 
+    def retrain(self, text):
+
+        id_list = self.ids_all(text=text[:])
+
+        id_df = pd.DataFrame(id_list,columns=['input_ids'])
+
+        dataset = Dataset.from_pandas(id_df)
+
+        # print(dataset)
+        output_dir = './assets/model/'
+        training_args = TrainingArguments(
+            output_dir=output_dir,
+            # overwrite_output_dir=True,
+            # evaluation_strategy="epoch",
+            overwrite_output_dir=True,
+            # evaluation_strategy="epoch",
+            learning_rate=2e-5,
+            weight_decay=0.01,
+            # per_device_train_batch_size=batch_size,
+            # per_device_eval_batch_size=batch_size,
+            # push_to_hub=True,
+            # fp16=True,
+            # logging_steps=logging_steps,
+        )
+
+        self.trainer = Trainer(
+            model=self.model.to(self.device),
+            args=training_args,
+            train_dataset=dataset,
+            data_collator=self.data_collator
+        )
+
+        # for cb in self.trainer.callback_handler.callbacks:
+        #     if isinstance(cb, DefaultFlowCallback):
+        #         self.trainer.callback_handler.remove_callback(cb)
+
+        self.trainer.train()
+        self.model.to(self.device).save_pretrained(output_dir)
+        self.tokenizer.save_pretrained(output_dir)
+
+
+
 
 model = Model()
 
@@ -89,7 +132,7 @@ def get_model():
     return model
 
 
-# http POST http://127.0.0.1:8000/fill_mask text="1,Q42,[MASK] Adams,[MASK] writer and [MASK],Male,United Kingdom,Artist,1952,2001.0,natural causes,49.0"
+# http POST http://127.0.0.1:8000/fill_mask text="1,Q42,[MASK] Adams,[MASK] [MASK] [MASK] [MASK],Male,United Kingdom,Artist,1952,2001.0,natural causes,49.0"
 # http POST http://127.0.0.1:8000/fill_mask text="1,Q42,[MASK] Adams,[MASK] writer and [MASK],[MASK],United Kingdom,Artist,1952,2001.0,natural causes,49.0"
 
 # http POST http://127.0.0.1:8000/perplexity text="1,Q42,Douglas Adams,English writer and humorist,Male,United Kingdom,Artist,1952,2001.0,natural causes,49.0"

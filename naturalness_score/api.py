@@ -23,6 +23,11 @@ class NaturalnessPerplexityResponse(BaseModel):
     perplexity: float
 
 
+class NaturalnessRetrainResponse(BaseModel):
+    status: str
+
+
+
 @app.post("/fill_mask", response_model=NaturalnessMaskResponse)
 async def fill_mask(request: NaturalnessRequest, model: Model = Depends(get_model)):
     text_mask_fill = model.fill_mask(request.text)
@@ -36,4 +41,11 @@ async def perplexity(request: NaturalnessRequest, model: Model = Depends(get_mod
     perplexity = model.perplexity(request.text)
     return NaturalnessPerplexityResponse(
         perplexity=perplexity
+    )
+
+@app.post("/retrain", response_model=NaturalnessRetrainResponse)
+async def retrain(request: NaturalnessRequest, model: Model = Depends(get_model)):
+    status = model.retrain(request.text)
+    return NaturalnessPerplexityResponse(
+        status=status
     )

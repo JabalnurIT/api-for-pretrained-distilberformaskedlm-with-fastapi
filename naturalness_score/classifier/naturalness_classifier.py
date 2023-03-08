@@ -14,5 +14,6 @@ class NaturalnessClassifier(nn.Module):
         self.distilBert = DistilBertForMaskedLM.from_pretrained(config["PRE_TRAINED_MODEL"], config=distilBertConfig)
 
     def forward(self, input_ids, attention_mask, labels):
-        output = self.distilBert(input_ids=input_ids,attention_mask=attention_mask, labels=labels).logits
+        # output = self.distilBert(input_ids=input_ids,attention_mask=attention_mask, labels=labels).logits
+        output = self.distilBert(input_ids=input_ids,attention_mask=attention_mask, labels=labels)
         return output
