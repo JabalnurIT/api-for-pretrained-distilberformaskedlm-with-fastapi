@@ -46,6 +46,6 @@ async def perplexity(request: NaturalnessRequest, model: Model = Depends(get_mod
 @app.post("/retrain", response_model=NaturalnessRetrainResponse)
 async def retrain(request: NaturalnessRequest, model: Model = Depends(get_model)):
     status = model.retrain(request.text)
-    return NaturalnessPerplexityResponse(
+    return NaturalnessRetrainResponse(
         status=status
     )

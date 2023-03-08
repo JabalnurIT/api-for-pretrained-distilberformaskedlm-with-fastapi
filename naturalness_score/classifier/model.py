@@ -5,10 +5,10 @@ import math
 import numpy as np
 import pandas as pd
 from datasets import Dataset
-from transformers import AutoTokenizer, Trainer, DataCollatorForLanguageModeling, TrainingArguments
+from transformers import AutoTokenizer, Trainer, DataCollatorForLanguageModeling, TrainingArguments, DistilBertForMaskedLM, DistilBertConfig
 from transformers import DefaultFlowCallback
 
-from .naturalness_classifier import NaturalnessClassifier
+
 
 with open("config.json") as json_file:
     config = json.load(json_file)
@@ -17,46 +17,31 @@ with open("config.json") as json_file:
 class Model:
     def __init__(self):
 
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained(config["DISTIL_BERT_MODEL"])
-
-        self.model = NaturalnessClassifier()
-
+        
+        self.config = DistilBertConfig.from_json_file(config["PRE_TRAINED_CONFIG"])
+        self.model = DistilBertForMaskedLM.from_pretrained(config["PRE_TRAINED_MODEL"],config=self.config)
+        
         self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm_probability=0.15)
+        
         self.trainer = Trainer(
-            model=self.model.to(self.device),
+            model=self.model,
             data_collator=self.data_collator,
         )
 
-    def fill_mask(self, text):
-        inputs = self.tokenizer.encode_plus(
-            text,
-            max_length=config["MAX_SEQUENCE_LEN"],
-            truncation=True,
-            add_special_tokens=True,
-            return_token_type_ids=False,
-            padding=True,
-            return_attention_mask=True,
-            return_tensors="pt",
-        )
-        input_ids = inputs["input_ids"].to(self.device)
-
-        with torch.no_grad():
-            token_logits = self.trainer.model(input_ids, None, None).logits
-
+    def fill_mask(self, text, N = 1):
+        inputs = self.tokenizer(text, return_tensors="pt")
+        token_logits = self.model(**inputs).logits
         _,mask_token_index = (np.argwhere(inputs["input_ids"] == self.tokenizer.mask_token_id)).numpy()
-
         mask_token_logits = [token_logits[0, index, :] for index in mask_token_index]
 
-        top_N_tokens = [np.argsort(-(logit.detach().numpy()))[:5].tolist() for logit in mask_token_logits]
-
+        top_N_tokens = [np.argsort(-(logit.detach().numpy()))[:N].tolist() for logit in mask_token_logits]
+        # print(top_N_tokens)
         for i,mask in enumerate(top_N_tokens):
             for n,token in enumerate(mask):
-                if n == 0: 
-                    lastTop = self.tokenizer.decode([token])
+                if(n == 0): lastTop = self.tokenizer.decode([token])
                 # print(f"mask{i}>>> {text.replace(self.tokenizer.mask_token, self.tokenizer.decode([token]), 1)}")
             text = text.replace(self.tokenizer.mask_token, lastTop, 1)
-        # print(text)
         return (
             text
         )
@@ -89,26 +74,17 @@ class Model:
         id_df = pd.DataFrame(id_list,columns=['input_ids'])
 
         dataset = Dataset.from_pandas(id_df)
-
-        # print(dataset)
-        output_dir = './assets/model/'
+        
+        output_dir = config["OUTPUT_DIR"]
         training_args = TrainingArguments(
             output_dir=output_dir,
-            # overwrite_output_dir=True,
-            # evaluation_strategy="epoch",
             overwrite_output_dir=True,
-            # evaluation_strategy="epoch",
             learning_rate=2e-5,
             weight_decay=0.01,
-            # per_device_train_batch_size=batch_size,
-            # per_device_eval_batch_size=batch_size,
-            # push_to_hub=True,
-            # fp16=True,
-            # logging_steps=logging_steps,
         )
 
-        self.trainer = Trainer(
-            model=self.model.to(self.device),
+        trainer = Trainer(
+            model=self.model,
             args=training_args,
             train_dataset=dataset,
             data_collator=self.data_collator
@@ -117,10 +93,16 @@ class Model:
         # for cb in self.trainer.callback_handler.callbacks:
         #     if isinstance(cb, DefaultFlowCallback):
         #         self.trainer.callback_handler.remove_callback(cb)
-
-        self.trainer.train()
-        self.model.to(self.device).save_pretrained(output_dir)
-        self.tokenizer.save_pretrained(output_dir)
+        try:
+            trainer.train()
+            self.model.save_pretrained(output_dir)
+            self.tokenizer.save_pretrained(output_dir)
+            status = "Success"
+        except:
+            status = "Failed"
+        return status
+        
+        
 
 
 
@@ -131,8 +113,14 @@ model = Model()
 def get_model():
     return model
 
+# fill_mask
+# http POST http://127.0.0.1:8000/fill_mask text="Q23,George [MASK],1st [MASK] of the United States (1732–1799),[MASK],United States of America; Kingdom of Great Britain,Politician,1732,1799.0,natural causes,67.0"
+# http POST http://127.0.0.1:8000/fill_mask text="Q42,[MASK] Adams,[MASK] writer and [MASK],[MASK],United Kingdom,Artist,1952,2001.0,natural causes,49.0"
 
-# http POST http://127.0.0.1:8000/fill_mask text="1,Q42,[MASK] Adams,[MASK] [MASK] [MASK] [MASK],Male,United Kingdom,Artist,1952,2001.0,natural causes,49.0"
-# http POST http://127.0.0.1:8000/fill_mask text="1,Q42,[MASK] Adams,[MASK] writer and [MASK],[MASK],United Kingdom,Artist,1952,2001.0,natural causes,49.0"
+# perplexity
+# http POST http://127.0.0.1:8000/perplexity text="Q42,Douglas Adams,English writer and humorist,Male,United Kingdom,Artist,1952,2001.0,natural causes,49.0"
 
-# http POST http://127.0.0.1:8000/perplexity text="1,Q42,Douglas Adams,English writer and humorist,Male,United Kingdom,Artist,1952,2001.0,natural causes,49.0"
+# retrain 
+# http POST http://127.0.0.1:8000/retrain text="Q23,George Washington,1st president of the United States (1732–1799),Male,United States of America; Kingdom of Great Britain,Politician,1732,1799.0,natural causes,67.0"
+
+# ['Q23,George Washington,1st president of the United States (1732–1799),Male,United States of America; Kingdom of Great Britain,Politician,1732,1799.0,natural causes,67.0','Q42,Douglas Adams,English writer and humorist,Male,United Kingdom,Artist,1952,2001.0,natural causes,49.0','Q91,Abraham Lincoln,16th president of the United States (1809-1865),Male,United States of America,Politician,1809,1865.0,homicide,56.0','Q254,Wolfgang Amadeus Mozart,Austrian composer of the Classical period,Male,Archduchy of Austria; Archbishopric of Salzburg,Artist,1756,1791.0,,35.0']

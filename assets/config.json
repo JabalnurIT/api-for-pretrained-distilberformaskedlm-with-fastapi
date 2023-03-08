@@ -1,5 +1,5 @@
 {
-  "_name_or_path": "distilbert-base-uncased",
+  "_name_or_path": "assets/pytorch_model.bin",
   "activation": "gelu",
   "architectures": [
     "DistilBertForMaskedLM"
