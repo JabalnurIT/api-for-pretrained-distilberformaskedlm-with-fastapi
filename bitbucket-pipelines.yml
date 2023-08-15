@@ -12,6 +12,7 @@ pipelines:
           name: 'Build and Test'
           script:
             - echo "Your build and test goes here..."
+            - pipenv install --dev
       - step:
           name: 'Lint'
           script:
@@ -34,4 +35,5 @@ pipelines:
         trigger: 'manual'
         script:
           - echo "Your deployment to production script goes here..."
+          - apt-get update
           - uvicorn naturalness_score.api:app --host 0.0.0.0 --port 8000
