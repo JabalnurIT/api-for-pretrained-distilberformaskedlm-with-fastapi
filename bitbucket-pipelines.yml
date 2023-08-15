@@ -27,8 +27,7 @@ pipelines:
         deployment: staging
         script:
           - echo "Your deployment to staging script goes here..."
-          - echo "Starting UVicorn server..."
-          - uvicorn naturalness_score.api:app
+          - echo "Starting UVicorn server
     - step:
         name: 'Deployment to Production'
         deployment: production
