@@ -1,9 +1,9 @@
 # This is an example Starter pipeline configuration
-# Use a skeleton to build, test and deploy using manual and parallel steps
+# Use a skeleton to build, test, and deploy using manual and parallel steps
 # -----
-# You can specify a custom docker image from Docker Hub as your build environment.
+# You can specify a custom Docker image from Docker Hub as your build environment.
 
-image: atlassian/default-image:3
+image: python:3.8
 
 pipelines:
   default:
@@ -12,8 +12,6 @@ pipelines:
           name: 'Build and Test'
           script:
             - echo "Your build and test goes here..."
-            - pip install pipenv
-            - pipenv install --dev
       - step:
           name: 'Lint'
           script:
@@ -23,18 +21,25 @@ pipelines:
           script:
             - echo "Your security scan goes here..."
 
-    # The following deployment steps will be executed for each pipeline run. To configure your steps and conditionally deploy see https://support.atlassian.com/bitbucket-cloud/docs/configure-bitbucket-pipelinesyml/
     - step:
         name: 'Deployment to Staging'
         deployment: staging
         script:
           - echo "Your deployment to staging script goes here..."
-          - echo "Starting UVicorn server"
+          
+          # Install pipenv
+          - pip install pipenv
+          
+          # Install dependencies from Pipfile
+          - pipenv install --deploy --ignore-pipfile
+          
+          # Start UVicorn server
+          - echo "Starting UVicorn server..."
+          - pipenv run uvicorn naturalness_score.api:app --host 0.0.0.0 --port 8000
+
     - step:
         name: 'Deployment to Production'
         deployment: production
         trigger: 'manual'
         script:
           - echo "Your deployment to production script goes here..."
-          - apt-get update
-          - uvicorn naturalness_score.api:app --host 0.0.0.0 --port 8000
