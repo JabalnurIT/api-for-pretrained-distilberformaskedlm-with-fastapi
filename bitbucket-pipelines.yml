@@ -3,7 +3,7 @@
 # -----
 # You can specify a custom Docker image from Docker Hub as your build environment.
 
-image: python:3.8
+image: python:3.10.9
 
 pipelines:
   default:
@@ -31,7 +31,7 @@ pipelines:
           - pip install pipenv
           
           # Install dependencies from Pipfile
-          - pipenv install --deploy --ignore-pipfile
+          - pipenv install --deploy
           
           # Start UVicorn server
           - echo "Starting UVicorn server..."
