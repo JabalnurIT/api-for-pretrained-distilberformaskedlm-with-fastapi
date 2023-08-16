@@ -30,6 +30,9 @@ pipelines:
           # Install pipenv
           - pip install pipenv
           
+          # Remove any existing Pipfile.lock
+          - rm Pipfile.lock
+          
           # Install dependencies from Pipfile
           - pipenv install --deploy
           
