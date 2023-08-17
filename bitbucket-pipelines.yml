@@ -3,7 +3,7 @@
 # -----
 # You can specify a custom Docker image from Docker Hub as your build environment.
 
-image: python:3.10.9
+image: python:3.10
 
 pipelines:
   default:
