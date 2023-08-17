@@ -35,6 +35,10 @@ pipelines:
           
           # Install dependencies from Pipfile
           - pipenv install --deploy
+
+          # Start UVicorn server
+          - echo "Starting UVicorn server..."
+          - pipenv run uvicorn naturalness_score.api:app --host=0.0.0.0 --port=8000
           
 
     - step:
@@ -43,6 +47,3 @@ pipelines:
         trigger: 'manual'
         script:
           - echo "Your deployment to production script goes here..."
-          # Start UVicorn server
-          - echo "Starting UVicorn server..."
-          - uvicorn naturalness_score.api:app --host=0.0.0.0 --port=8000
