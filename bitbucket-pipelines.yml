@@ -29,7 +29,7 @@ pipelines:
         script:
           - echo "Your deployment to staging script goes here..."
           
-          - ls -lh pytorch_model.bin # 26M large-file.zip
+          - ls -lh assets/pytorch_model.bin # 26M large-file.zip
           
           # Install pipenv
           - pip install pipenv
