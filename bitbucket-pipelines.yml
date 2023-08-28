@@ -23,9 +23,13 @@ pipelines:
 
     - step:
         name: 'Deployment to Staging'
+        clone: 
+          lfs: true
         deployment: staging
         script:
           - echo "Your deployment to staging script goes here..."
+          
+          - ls -lh pytorch_model.bin # 26M large-file.zip
           
           # Install pipenv
           - pip install pipenv
