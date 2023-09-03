@@ -1,10 +1,9 @@
 [[source]]
 url = "https://pypi.org/simple"
-verify_ssl = false
+verify_ssl = true
 name = "pypi"
 
 [packages]
-accelerate = "*"
 anyio = "*"
 click = "*"
 fastapi = "*"
